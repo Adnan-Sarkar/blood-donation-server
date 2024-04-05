@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import httpStatus from "http-status";
 import router from "./app/routes";
+import notFound from "./app/middleware/notFound";
 
 const app = express();
 
@@ -17,5 +18,7 @@ app.get("/", (_req: Request, res: Response) => {
     message: "Welcome to Blood Donation API",
   });
 });
+
+app.use(notFound);
 
 export default app;
