@@ -6,6 +6,8 @@ const zodErrorHandler = (error: ZodError) => {
     message += `${issue.message}. `;
   });
 
+  message = message.trim();
+
   const issues = error.issues.map((issue) => {
     return {
       field: issue.path[0],
