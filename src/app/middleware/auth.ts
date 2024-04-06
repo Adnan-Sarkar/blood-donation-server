@@ -19,6 +19,11 @@ const auth = () => {
       throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized!");
     }
 
+    req.user = {
+      id: decode.id,
+      name: decode.name,
+      email: decode.email,
+    };
     next();
   });
 };
