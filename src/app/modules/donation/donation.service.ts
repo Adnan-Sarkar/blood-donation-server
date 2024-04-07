@@ -1,4 +1,4 @@
-import { Request } from "@prisma/client";
+import { Request, RequestStatus } from "@prisma/client";
 import TJWTPayload from "../../types/jwtPayload.type";
 import prisma from "../../utils/prismaClient";
 
@@ -53,7 +53,27 @@ const getAllDonationRequest = async (user: TJWTPayload) => {
   return result;
 };
 
+// update donation request status
+const updateDonationRequest = async (
+  requestId: string,
+  user: TJWTPayload,
+  payload: { status: RequestStatus }
+) => {
+  const result = await prisma.request.update({
+    where: {
+      id: requestId,
+      donorId: user.id,
+    },
+    data: {
+      requestStatus: payload.status,
+    },
+  });
+
+  return result;
+};
+
 export const DonationService = {
   donationRequest,
   getAllDonationRequest,
+  updateDonationRequest,
 };
