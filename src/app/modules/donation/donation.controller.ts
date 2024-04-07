@@ -15,6 +15,19 @@ const donationRequest = catchAsync(async (req, res) => {
   });
 });
 
+// get all donation request
+const getAllDonationRequest = catchAsync(async (req, res) => {
+  const result = await DonationService.getAllDonationRequest(req.user);
+
+  sendResponse(res, false, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Donation requests retrieved successfully",
+    data: result,
+  });
+});
+
 export const DonationController = {
   donationRequest,
+  getAllDonationRequest,
 };

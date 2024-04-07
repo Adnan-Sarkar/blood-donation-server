@@ -6,6 +6,8 @@ const donationRequest = express.Router();
 
 donationRequest.post("/", auth(), DonationController.donationRequest);
 
+donationRequest.get("/", auth(), DonationController.getAllDonationRequest);
+
 const donorList = express.Router();
 
 export const DonationRequestRoute = donationRequest;

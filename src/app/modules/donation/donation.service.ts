@@ -39,6 +39,21 @@ const donationRequest = async (
   return result;
 };
 
+// get all donation request
+const getAllDonationRequest = async (user: TJWTPayload) => {
+  const result = await prisma.request.findMany({
+    where: {
+      donorId: user.id,
+    },
+    include: {
+      requester: true,
+    },
+  });
+
+  return result;
+};
+
 export const DonationService = {
   donationRequest,
+  getAllDonationRequest,
 };
