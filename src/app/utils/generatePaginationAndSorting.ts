@@ -8,15 +8,18 @@ const generatePaginationAndSorting = (
   const limit = Number(metaOptions.limit) || 10;
   const skip = (page - 1) * limit;
 
+  let sortObj = {};
   const sortBy = sortByFields.includes(metaOptions.sortBy as string)
     ? (metaOptions.sortBy as string)
     : "";
 
   const sortOrder = metaOptions.sortOrder || "asc";
 
-  const sortObj = {
-    [sortBy]: sortOrder,
-  };
+  if (sortBy) {
+    sortObj = {
+      [sortBy]: sortOrder,
+    };
+  }
 
   return {
     page,
