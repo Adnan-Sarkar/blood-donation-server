@@ -2,6 +2,9 @@ import httpStatus from "http-status";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { DonationService } from "./donation.service";
+import pickFromQueryParams from "../../utils/pickFromQueryParams";
+import { donorListQueryParams } from "./donation.constant";
+import { metaData } from "../../constant/metaData";
 
 // donation request
 const donationRequest = catchAsync(async (req, res) => {
@@ -45,8 +48,28 @@ const updateDonationRequest = catchAsync(async (req, res) => {
   });
 });
 
+// get donor list
+const getDonorList = catchAsync(async (req, res) => {
+  const filterData = pickFromQueryParams(req.query, donorListQueryParams);
+  const metaInfo = pickFromQueryParams(req.query, metaData);
+
+  const { meta, data } = await DonationService.getDonorList(
+    filterData,
+    metaInfo
+  );
+
+  sendResponse(res, true, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Donors successfully found",
+    meta,
+    data,
+  });
+});
+
 export const DonationController = {
   donationRequest,
   getAllDonationRequest,
   updateDonationRequest,
+  getDonorList,
 };

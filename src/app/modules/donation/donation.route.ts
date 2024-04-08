@@ -19,5 +19,7 @@ donationRequest.put(
 
 const donorList = express.Router();
 
+donorList.get("/", DonationController.getDonorList);
+
 export const DonationRequestRoute = donationRequest;
 export const DonorListRoute = donorList;
