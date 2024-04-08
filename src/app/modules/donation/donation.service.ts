@@ -66,6 +66,13 @@ const updateDonationRequest = async (
   user: TJWTPayload,
   payload: { status: RequestStatus }
 ) => {
+  await prisma.request.findUniqueOrThrow({
+    where: {
+      id: requestId,
+      donorId: user.id,
+    },
+  });
+
   const result = await prisma.request.update({
     where: {
       id: requestId,
