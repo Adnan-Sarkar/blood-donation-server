@@ -6,7 +6,9 @@
   "scripts": {
     "start": "ts-node-dev --respawn --transpile-only ./src/server.ts",
     "migrate": "npx prisma migrate dev",
-    "studio": "npx prisma studio"
+    "studio": "npx prisma studio",
+    "build": "tsc",
+    "postinstall": "prisma generate"
   },
   "author": "Adnan Sarkar",
   "license": "ISC",
