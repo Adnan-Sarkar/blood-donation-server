@@ -11,16 +11,22 @@ datasource db {
 model User {
   id                  String       @id @default(uuid())
   name                String
-  email               String
+  email               String       @unique
   password            String
+  contactNumber       String       @default("")
+  gender              Gender
   bloodType           BloodType
+  role                UserRole     @default(USER)
   location            String
+  profilePicture      String       @default("")
+  status              Status       @default(ACTIVE)
   availability        Boolean      @default(false)
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
   userProfile         UserProfile?
   requestsAsDonor     Request[]    @relation("requestsAsDonor")
   requestsAsRequester Request[]    @relation("requestsAsRequester")
+  Revew               Review?
 
   @@map("user")
 }
@@ -45,9 +51,11 @@ model Request {
   requesterId     String
   phoneNumber     String
   dateOfDonation  String
+  timeOfDonation  String
   hospitalName    String
   hospitalAddress String
   reason          String
+  iscompleted     Boolean       @default(false)
   requestStatus   RequestStatus @default(PENDING)
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -55,6 +63,20 @@ model Request {
   requester       User          @relation(fields: [requesterId], references: [id], name: "requestsAsRequester")
 
   @@map("request")
+}
+
+// review model
+model Review {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  rating    Float
+  comment   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("reviews")
 }
 
 enum BloodType {
@@ -72,4 +94,21 @@ enum RequestStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+  BLOCKED
 }
