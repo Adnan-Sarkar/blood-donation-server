@@ -17,7 +17,12 @@ const registration = catchAsync(async (req, res) => {
 
 // login
 const login = catchAsync(async (req, res) => {
-  const result = await AuthService.login(req.body);
+  const { refreshToken, result } = await AuthService.login(req.body);
+
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: true,
+  });
 
   sendResponse(res, false, {
     success: true,
@@ -27,7 +32,34 @@ const login = catchAsync(async (req, res) => {
   });
 });
 
+// get access token using refresh token
+const refreshToken = catchAsync(async (req, res) => {
+  const { refreshToken } = req.cookies;
+  const token = await AuthService.refreshToken(refreshToken as string);
+
+  sendResponse(res, false, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Access Token retreived successfully",
+    data: token,
+  });
+});
+
+// change password
+const changePassword = catchAsync(async (req, res) => {
+  const result = await AuthService.changePassword(req.user, req.body);
+
+  sendResponse(res, false, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Password changed successfully",
+    data: result,
+  });
+});
+
 export const AuthController = {
   registration,
   login,
+  changePassword,
+  refreshToken,
 };
