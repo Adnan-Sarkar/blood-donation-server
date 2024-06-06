@@ -3,11 +3,9 @@ import TJWTPayload from "../../types/jwtPayload.type";
 import prisma from "../../utils/prismaClient";
 import { TDonorListQueryParam } from "./donation.type";
 import TMetaOptions from "../../types/metaOptions";
-import {
-  donorListSearchFields,
-  donorListSortByFields,
-} from "./donation.constant";
+import { donorListSortByFields } from "./donation.constant";
 import generatePaginationAndSorting from "../../utils/generatePaginationAndSorting";
+import generatePrismaWhereConditions from "../../utils/generatePrismaWhereConditions";
 
 // donation request
 const donationRequest = async (
@@ -19,6 +17,7 @@ const donationRequest = async (
     requesterId: user.id,
     phoneNumber: payload.phoneNumber,
     dateOfDonation: payload.dateOfDonation,
+    timeOfDonation: payload.timeOfDonation,
     hospitalName: payload.hospitalName,
     hospitalAddress: payload.hospitalAddress,
     reason: payload.reason,
@@ -46,7 +45,7 @@ const donationRequest = async (
   return result;
 };
 
-// get all donation request
+// get all donation requests
 const getAllDonationRequest = async (user: TJWTPayload) => {
   const result = await prisma.request.findMany({
     where: {
@@ -58,6 +57,111 @@ const getAllDonationRequest = async (user: TJWTPayload) => {
   });
 
   return result;
+};
+
+// get all my donation requests Me as requester
+const getAllMyDonationRequests = async (
+  user: TJWTPayload,
+  metaData: TMetaOptions
+) => {
+  const { page, limit } = metaData;
+  const pageNumber = Number(page) || 1;
+  const limitNumber = Number(limit) || 10;
+
+  const result = await prisma.request.findMany({
+    where: { requesterId: user.id },
+    include: {
+      donor: true,
+    },
+    skip: (pageNumber - 1) * limitNumber,
+    take: limitNumber,
+  });
+
+  const total = await prisma.request.count({
+    where: {
+      requesterId: user.id,
+    },
+  });
+
+  return {
+    meta: {
+      page: pageNumber,
+      limit: limitNumber,
+      total,
+    },
+    data: result,
+  };
+};
+
+// get all my donor request Me as Donor
+const getAllMyDonorRequest = async (
+  user: TJWTPayload,
+  metaData: TMetaOptions
+) => {
+  const { page, limit } = metaData;
+  const pageNumber = Number(page) || 1;
+  const limitNumber = Number(limit) || 10;
+
+  const result = await prisma.request.findMany({
+    where: {
+      donorId: user.id,
+    },
+    include: {
+      requester: true,
+    },
+    skip: (pageNumber - 1) * limitNumber,
+    take: limitNumber,
+  });
+
+  const total = await prisma.request.count({
+    where: {
+      donorId: user.id,
+    },
+  });
+
+  return {
+    meta: {
+      page: pageNumber,
+      limit: limitNumber,
+      total,
+    },
+    data: result,
+  };
+};
+
+// check donation request is sent or not
+const checkDonationRequest = async (donorId: string, requesterId: string) => {
+  const result = await prisma.request.findFirst({
+    where: {
+      requesterId,
+      donorId,
+    },
+  });
+
+  if (result?.id) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+// get donation request status
+const getDonationRequestStatus = async (
+  donorId: string,
+  requesterId: string
+) => {
+  const result = await prisma.request.findFirst({
+    where: {
+      requesterId,
+      donorId,
+    },
+  });
+
+  if (result?.id) {
+    return result.requestStatus;
+  } else {
+    return false;
+  }
 };
 
 // update donation request status
@@ -91,67 +195,25 @@ const getDonorList = async (
   query: TDonorListQueryParam,
   metaData: TMetaOptions
 ) => {
-  const { searchTerm, ...filterData } = query;
   const { page, limit, skip, sortObj } = generatePaginationAndSorting(
     metaData,
     donorListSortByFields
   );
 
-  let nestedSortObj = {};
-  if ("age" in sortObj || "lastDonationDate" in sortObj) {
-    nestedSortObj = {
-      userProfile: {
-        ...sortObj,
-      },
-    };
-  }
-  const finalSortObj =
-    Object.keys(nestedSortObj).length === 0 ? sortObj : nestedSortObj;
-
-  const conditions: Prisma.UserWhereInput[] = [];
-
-  if (searchTerm) {
-    conditions.push({
-      OR: donorListSearchFields.map((searchField) => {
-        return {
-          [searchField]: {
-            contains: searchTerm,
-            mode: "insensitive",
-          },
-        };
-      }),
-    });
-  }
-
-  const filterFieldsName = Object.keys(filterData);
-  if (filterFieldsName.length > 0) {
-    conditions.push({
-      AND: filterFieldsName.map((filterField) => {
-        const equalValue = (filterData as Record<string, any>)[filterField];
-
-        if (equalValue === "true" || equalValue === "false") {
-          return {
-            [filterField]: {
-              equals: equalValue === "true" ? true : false,
-            },
-          };
-        } else {
-          return {
-            [filterField]: {
-              equals: (filterData as Record<string, any>)[filterField],
-            },
-          };
-        }
-      }),
-    });
-  }
+  const { finalSortObj, conditions } = generatePrismaWhereConditions(
+    query,
+    sortObj
+  );
 
   const whereCondition: Prisma.UserWhereInput = {
     AND: conditions,
   };
 
   const result = await prisma.user.findMany({
-    where: whereCondition,
+    where: {
+      ...whereCondition,
+      role: "USER",
+    },
     include: {
       userProfile: true,
     },
@@ -174,9 +236,55 @@ const getDonorList = async (
   };
 };
 
+// complete request
+const completeRequest = async (id: string, user: TJWTPayload) => {
+  const requestData = await prisma.request.findUniqueOrThrow({
+    where: {
+      id,
+      donorId: user.id,
+    },
+  });
+
+  await prisma.$transaction(async (transactionClient) => {
+    await transactionClient.request.update({
+      where: {
+        id,
+      },
+      data: {
+        iscompleted: true,
+      },
+    });
+
+    await transactionClient.user.update({
+      where: {
+        id: requestData.donorId,
+      },
+      data: {
+        availability: false,
+      },
+    });
+
+    await transactionClient.userProfile.update({
+      where: {
+        userId: requestData.donorId,
+      },
+      data: {
+        lastDonationDate: new Date().toISOString().slice(0, 10),
+      },
+    });
+  });
+
+  return null;
+};
+
 export const DonationService = {
   donationRequest,
   getAllDonationRequest,
   updateDonationRequest,
   getDonorList,
+  getAllMyDonationRequests,
+  getAllMyDonorRequest,
+  checkDonationRequest,
+  getDonationRequestStatus,
+  completeRequest,
 };

@@ -30,6 +30,71 @@ const getAllDonationRequest = catchAsync(async (req, res) => {
   });
 });
 
+// Get All Requests Me As A Donor
+const getAllMyDonationRequests = catchAsync(async (req, res) => {
+  const metaInfo = pickFromQueryParams(req.query, metaData);
+
+  const result = await DonationService.getAllMyDonationRequests(
+    req.user,
+    metaInfo
+  );
+
+  sendResponse(res, false, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "My donation requests retrieved successfully",
+    data: result,
+  });
+});
+
+// Get All Requests Me As A Requester
+const getAllMyDonorRequest = catchAsync(async (req, res) => {
+  const metaInfo = pickFromQueryParams(req.query, metaData);
+
+  const result = await DonationService.getAllMyDonorRequest(req.user, metaInfo);
+
+  sendResponse(res, false, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "My donor requests retrieved successfully",
+    data: result,
+  });
+});
+
+// check donation request is sent or not
+const checkDonationRequest = catchAsync(async (req, res) => {
+  const { donorId, requesterId } = req.query;
+
+  const result = await DonationService.checkDonationRequest(
+    donorId as string,
+    requesterId as string
+  );
+
+  sendResponse(res, false, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Checking donation request successfully",
+    data: result,
+  });
+});
+
+// get donation request status
+const getDonationRequestStatus = catchAsync(async (req, res) => {
+  const { donorId, requesterId } = req.query;
+
+  const result = await DonationService.getDonationRequestStatus(
+    donorId as string,
+    requesterId as string
+  );
+
+  sendResponse(res, false, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Retrieved donation request status successfully",
+    data: result,
+  });
+});
+
 // update donation request status
 const updateDonationRequest = catchAsync(async (req, res) => {
   const { requestId } = req.params;
@@ -67,9 +132,28 @@ const getDonorList = catchAsync(async (req, res) => {
   });
 });
 
+// complete request
+const completeRequest = catchAsync(async (req, res) => {
+  const { requestId } = req.params;
+
+  const result = await DonationService.completeRequest(requestId, req.user);
+
+  sendResponse(res, false, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Donation request completed successfully",
+    data: result,
+  });
+});
+
 export const DonationController = {
   donationRequest,
   getAllDonationRequest,
   updateDonationRequest,
   getDonorList,
+  getAllMyDonationRequests,
+  getAllMyDonorRequest,
+  checkDonationRequest,
+  getDonationRequestStatus,
+  completeRequest,
 };
