@@ -7,23 +7,26 @@ import AppError from "../error/AppError";
 const globalErrorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
   const errorResponse = {
     success: false,
-    message: error.message || "error mesage",
+    statusCode: 500,
+    message: error.message || "error message",
     errorDetails: error,
   };
 
-  let statustCode: number = httpStatus.INTERNAL_SERVER_ERROR;
+  let statusCode: number = httpStatus.INTERNAL_SERVER_ERROR;
 
   if (error instanceof ZodError) {
     const { message, issues } = zodErrorHandler(error);
     errorResponse.message = message;
     errorResponse.errorDetails = { issues };
-    statustCode = httpStatus.BAD_REQUEST;
+    statusCode = httpStatus.BAD_REQUEST;
   } else if (error instanceof AppError) {
     errorResponse.message = error.message;
-    statustCode = error.statusCode;
+    statusCode = error.statusCode;
   }
 
-  res.status(statustCode).json(errorResponse);
+  errorResponse.statusCode = statusCode;
+
+  res.status(statusCode).json(errorResponse);
 };
 
 export default globalErrorHandler;
