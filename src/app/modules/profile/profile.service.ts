@@ -1,4 +1,4 @@
-import { UserProfile } from "@prisma/client";
+import { User, UserProfile } from "@prisma/client";
 import TJWTPayload from "../../types/jwtPayload.type";
 import prisma from "../../utils/prismaClient";
 
@@ -8,15 +8,7 @@ const getMyProfile = async (payload: TJWTPayload) => {
     where: {
       id: payload.id,
     },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      bloodType: true,
-      location: true,
-      availability: true,
-      createdAt: true,
-      updatedAt: true,
+    include: {
       userProfile: true,
     },
   });
@@ -24,22 +16,65 @@ const getMyProfile = async (payload: TJWTPayload) => {
   return result;
 };
 
-// update my profile
-const updateMyProfile = async (
-  payload: Partial<UserProfile>,
-  user: TJWTPayload
-) => {
-  const result = await prisma.userProfile.update({
+// get donor profile
+const getDonorProfile = async (id: string) => {
+  const result = await prisma.user.findUniqueOrThrow({
     where: {
-      userId: user.id,
+      id,
     },
-    data: payload,
+    include: {
+      userProfile: true,
+    },
   });
 
   return result;
 };
 
+// update my profile and user data
+const updateMyUserAndProfileData = async (
+  payload: {
+    user: Partial<User>;
+    userProfile: Partial<UserProfile>;
+  },
+  user: TJWTPayload
+) => {
+  const { user: userInfo, userProfile } = payload;
+
+  let needUpdateUserInfo = false;
+  let needUpdateUserProfileInfo = false;
+
+  if (userInfo) {
+    needUpdateUserInfo = true;
+  }
+  if (userProfile) {
+    needUpdateUserProfileInfo = true;
+  }
+
+  await prisma.$transaction(async (transactionClient) => {
+    if (needUpdateUserInfo) {
+      await transactionClient.user.update({
+        where: {
+          id: user.id,
+        },
+        data: userInfo,
+      });
+    }
+
+    if (needUpdateUserProfileInfo) {
+      await transactionClient.userProfile.update({
+        where: {
+          userId: user.id,
+        },
+        data: userProfile,
+      });
+    }
+  });
+
+  return null;
+};
+
 export const ProfileService = {
   getMyProfile,
-  updateMyProfile,
+  updateMyUserAndProfileData,
+  getDonorProfile,
 };

@@ -15,9 +15,25 @@ const getMyProfile = catchAsync(async (req, res) => {
   });
 });
 
-// update my profile
-const updateMyProfile = catchAsync(async (req, res) => {
-  const result = await ProfileService.updateMyProfile(req.body, req.user);
+// get donor profile
+const getDonorProfile = catchAsync(async (req, res) => {
+  const { donorId } = req.params;
+  const result = await ProfileService.getDonorProfile(donorId);
+
+  sendResponse(res, false, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Donor profile retrieved successfully",
+    data: result,
+  });
+});
+
+// update my profile and user data
+const updateMyUserAndProfileData = catchAsync(async (req, res) => {
+  const result = await ProfileService.updateMyUserAndProfileData(
+    req.body,
+    req.user
+  );
 
   sendResponse(res, false, {
     success: true,
@@ -29,5 +45,6 @@ const updateMyProfile = catchAsync(async (req, res) => {
 
 export const ProfileController = {
   getMyProfile,
-  updateMyProfile,
+  updateMyUserAndProfileData,
+  getDonorProfile,
 };
