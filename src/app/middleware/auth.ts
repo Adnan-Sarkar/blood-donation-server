@@ -3,7 +3,7 @@ import AppError from "../error/AppError";
 import catchAsync from "../utils/catchAsync";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { config } from "../config";
-import { UserRole } from "../constant/userRole";
+import {UserRole} from "@prisma/client";
 
 const auth = (...userRoles: (keyof typeof UserRole)[]) => {
   return catchAsync((req, _res, next) => {
