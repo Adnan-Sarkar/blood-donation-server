@@ -11,7 +11,10 @@ const app = express();
 // middlewares
 app.use(
   cors({
-    origin: "https://blood-donation-by-adnan-sarkar.vercel.app/",
+    origin: [
+      "https://blood-donation-by-adnan-sarkar.vercel.app",
+      " http://localhost:3000",
+    ],
     credentials: true,
   })
 );
