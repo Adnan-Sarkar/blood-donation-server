@@ -98,7 +98,12 @@ const login = async (payload: TLogin) => {
 
   // generate refresh token
   const refreshToken = jwtHelpers.generateToken(
-    userData,
+    {
+      id: userData.id,
+      name: userData.name,
+      email: userData.email,
+      role: userData.role,
+    },
     config.JWT_REFRESH_SECRET as string,
     config.JWT_REFRESH_EXPIRES_IN as string
   );
@@ -109,6 +114,7 @@ const login = async (payload: TLogin) => {
       name: userData.name,
       email: userData.email,
       role: userData.role,
+      status: userData.status,
       token,
     },
     refreshToken,

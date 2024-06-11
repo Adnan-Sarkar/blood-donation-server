@@ -19,16 +19,11 @@ const registration = catchAsync(async (req, res) => {
 const login = catchAsync(async (req, res) => {
   const { refreshToken, result } = await AuthService.login(req.body);
 
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: true,
-  });
-
   sendResponse(res, false, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Login successful",
-    data: result,
+    data: { result, refreshToken },
   });
 });
 
