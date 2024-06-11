@@ -13,8 +13,8 @@ app.use(
   cors({
     origin: [
       "https://blood-donation-by-adnan-sarkar.vercel.app",
-      "https://blood-donation-client-z7rd-9skayzepn-adnan-sarkars-projects.vercel.app/",
-      " http://localhost:3000",
+      "https://blood-donation-client-z7rd-9skayzepn-adnan-sarkars-projects.vercel.app",
+      "http://localhost:3000",
     ],
     credentials: true,
   })
