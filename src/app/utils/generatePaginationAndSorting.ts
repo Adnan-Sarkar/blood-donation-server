@@ -5,7 +5,7 @@ const generatePaginationAndSorting = (
   sortByFields: string[]
 ) => {
   const page = Number(metaOptions.page) || 1;
-  const limit = Number(metaOptions.limit) || 10;
+  const limit = Number(metaOptions.limit) || 12;
   const skip = (page - 1) * limit;
 
   let sortObj = {};
