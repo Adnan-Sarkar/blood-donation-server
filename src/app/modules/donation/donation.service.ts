@@ -46,7 +46,15 @@ const donationRequest = async (
 };
 
 // get all donation requests
-const getAllDonationRequest = async (user: TJWTPayload) => {
+const getAllDonationRequest = async (
+  user: TJWTPayload,
+  metaData: TMetaOptions
+) => {
+  const { page, limit } = metaData;
+  const pageNumber = Number(page) || 1;
+  const limitNumber = Number(limit) || 10;
+  const skip = (pageNumber - 1) * limitNumber;
+
   const result = await prisma.request.findMany({
     where: {
       donorId: user.id,
@@ -54,9 +62,24 @@ const getAllDonationRequest = async (user: TJWTPayload) => {
     include: {
       requester: true,
     },
+    skip,
+    take: limit,
   });
 
-  return result;
+  const total = await prisma.request.count({
+    where: {
+      donorId: user.id,
+    },
+  });
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: result,
+  };
 };
 
 // get all my donation requests Me as requester
@@ -138,11 +161,7 @@ const checkDonationRequest = async (donorId: string, requesterId: string) => {
     },
   });
 
-  if (result?.id) {
-    return true;
-  } else {
-    return false;
-  }
+  return !!result;
 };
 
 // get donation request status
@@ -193,7 +212,8 @@ const updateDonationRequest = async (
 // get donor list
 const getDonorList = async (
   query: TDonorListQueryParam,
-  metaData: TMetaOptions
+  metaData: TMetaOptions,
+  userId?: string | undefined
 ) => {
   const { page, limit, skip, sortObj } = generatePaginationAndSorting(
     metaData,
@@ -209,10 +229,29 @@ const getDonorList = async (
     AND: conditions,
   };
 
+  let user;
+  if (userId) {
+    user = await prisma.user.findUniqueOrThrow({
+      where: {
+        id: userId,
+      },
+    });
+  }
+
+  let excludeMe = {};
+  if (user && user?.role === "USER") {
+    excludeMe = {
+      NOT: {
+        id: user.id,
+      },
+    };
+  }
+
   const result = await prisma.user.findMany({
     where: {
       ...whereCondition,
       role: "USER",
+      ...excludeMe,
     },
     include: {
       userProfile: true,

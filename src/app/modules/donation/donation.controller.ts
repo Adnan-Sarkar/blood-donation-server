@@ -20,7 +20,11 @@ const donationRequest = catchAsync(async (req, res) => {
 
 // get all donation request
 const getAllDonationRequest = catchAsync(async (req, res) => {
-  const result = await DonationService.getAllDonationRequest(req.user);
+  const metaInfo = pickFromQueryParams(req.query, metaData);
+  const result = await DonationService.getAllDonationRequest(
+    req.user,
+    metaInfo
+  );
 
   sendResponse(res, false, {
     success: true,
@@ -117,18 +121,19 @@ const updateDonationRequest = catchAsync(async (req, res) => {
 const getDonorList = catchAsync(async (req, res) => {
   const filterData = pickFromQueryParams(req.query, donorListQueryParams);
   const metaInfo = pickFromQueryParams(req.query, metaData);
+  const userId = req.query?.excludeMe;
 
-  const { meta, data } = await DonationService.getDonorList(
+  const result = await DonationService.getDonorList(
     filterData,
-    metaInfo
+    metaInfo,
+    userId as string
   );
 
   sendResponse(res, true, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Donors successfully found",
-    meta,
-    data,
+    data: result,
   });
 });
 
