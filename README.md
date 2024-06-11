@@ -4,7 +4,7 @@
 
 The Blood Donation Application Server is a robust server-side application designed to facilitate blood donation processes efficiently. It provides user authentication and authorization features using JSON Web Tokens (JWT) to ensure secure access to its functionalities.
 
-The main purpose of the application is to connect blood donors with those in need by enabling users to find blood donors and request blood donations. Users can register an account, update their profiles, and participate in blood donation requests seamlessly.
+The main purpose of the application is to connect blood donors with those in need by enabling users to find blood donors and request blood donations. Users can register an account, update their profiles, can review and participate in blood donation requests seamlessly.
 
 ## Table of Contents
 
@@ -32,6 +32,8 @@ Database Tables:
 
 3. **profile:**
    Stores user profile information, including bio, age, and last donation date.
+4. **review:**
+    Users reviews about the application and donation.
 
 ## Technology Used
 
@@ -72,18 +74,37 @@ for `user`
 
 - **POST** /api/register
 - **POST** /api/login
+- **POST** /api/auth/change-password
+- **GET** /api/auth/refresh-token
+- **GET** /api/users
+- **PUT** /api/users/:userId
 
 for `profile`
 
 - **GET** /api/my-profile
 - **PUT** /api/my-profile
 
-for `request`
+for `donation`
 
 - **POST** /api/donation-request
 - **GET** /api/donation-request
+- **GET** /api/donation-request/my-donation-requests
+- **GET** /api/donation-request/my-donor-requests
+- **GET** /api/donation-request/check-donation-request
+- **GET** /api/donation-request/donation-request-status
 - **GET** /api/donor-list
 - **PUT** /api/donation-request/:requestId
+- **PUT** /api/donation-request/complete/:requestId
+
+for `review`
+
+- **POST** /api/review
+- **GET** /api/review
+- **GET** /api/review/all-reviews
+
+for `meta data`
+
+- **GET** /api/meta-data
 
 ## Getting Started
 
@@ -98,7 +119,7 @@ These instructions will help you set up and run the application on your local ma
 1. Clone the repository:
 
 ```bash
-https://github.com/Porgramming-Hero-web-course/l2-b2-fullstack-track-assignment-8-Adnan-Sarkar.git
+https://github.com/Adnan-Sarkar/blood-donation-server.git
 ```
 
 2. Navigate to the project directory:
@@ -120,6 +141,8 @@ DATABASE_URL=...
 PORT=...
 JWT_ACCESS_SECRET=...
 JWT_ACCESS_EXPIRES_IN=...
+JWT_REFRESH_SECRET=...
+JWT_REFRESH_EXPIRES_IN=...
 SALT_ROUNDS=...
 ```
 
