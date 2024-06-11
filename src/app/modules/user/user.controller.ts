@@ -11,14 +11,13 @@ const getAllUsers = catchAsync(async (req, res) => {
   const filterData = pickFromQueryParams(req.query, donorListQueryParams);
   const metaInfo = pickFromQueryParams(req.query, metaData);
 
-  const { meta, data } = await UserService.getAllUsers(filterData, metaInfo);
+  const result = await UserService.getAllUsers(filterData, metaInfo);
 
   sendResponse(res, true, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Users retrieved successfully",
-    meta,
-    data,
+    data: result,
   });
 });
 
