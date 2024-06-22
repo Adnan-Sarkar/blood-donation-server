@@ -29,4 +29,41 @@ const getMetaInfo = async (user: TJWTPayload) => {
   };
 };
 
-export const MetaServices = { getMetaInfo };
+// get admin meta data
+const getAdminMetadata = async () => {
+  const totalUsers = await prisma.user.count({
+    where: {
+      role: "USER"
+    }
+  });
+
+  const totalAvailableActiveUsers = await prisma.user.count({
+    where: {
+      role: "USER",
+      status: "ACTIVE",
+      availability: true
+    }
+  });
+
+  const totalMaleUsers = await prisma.user.count({
+    where: {
+      role: "USER",
+      gender: "MALE"
+    }
+  });
+
+  const totalCompletedRequests = await prisma.request.count({
+    where: {
+      iscompleted: true,
+    }
+  });
+
+  return {
+    totalUsers,
+    totalAvailableActiveUsers,
+    totalMaleUsers,
+    totalCompletedRequests
+  }
+}
+
+export const MetaServices = { getMetaInfo, getAdminMetadata };
