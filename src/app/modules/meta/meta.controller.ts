@@ -15,6 +15,19 @@ const getMetaInfo = catchAsync(async (req, res) => {
   });
 });
 
+// get admin meta data
+const getAdminMetadata = catchAsync(async (req, res) => {
+  const result = await MetaServices.getAdminMetadata();
+
+  sendResponse(res, true, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Admin metadata retrieved successfully",
+    data: result,
+  });
+});
+
 export const MetaController = {
   getMetaInfo,
+  getAdminMetadata
 };
