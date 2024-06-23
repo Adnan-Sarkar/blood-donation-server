@@ -79,6 +79,21 @@ model Review {
   @@map("reviews")
 }
 
+// event model
+model BloodDonationEvent {
+  id              String   @id @default(uuid())
+  eventTitle      String
+  eventLocation   String
+  eventDate       String
+  eventTime       String
+  contactNumber   String
+  eventCoverPhoto String   @default("")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("blood_donation_events")
+}
+
 enum BloodType {
   A_POSITIVE
   A_NEGATIVE
