@@ -88,6 +88,7 @@ model BloodDonationEvent {
   eventTime       String
   contactNumber   String
   eventCoverPhoto String   @default("")
+  isComplete      Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
