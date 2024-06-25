@@ -9,24 +9,25 @@ datasource db {
 
 // user model
 model User {
-  id                  String       @id @default(uuid())
+  id                  String               @id @default(uuid())
   name                String
-  email               String       @unique
+  email               String               @unique
   password            String
-  contactNumber       String       @default("")
+  contactNumber       String               @default("")
   gender              Gender
   bloodType           BloodType
-  role                UserRole     @default(USER)
+  role                UserRole             @default(USER)
   location            String
-  profilePicture      String       @default("")
-  status              Status       @default(ACTIVE)
-  availability        Boolean      @default(true)
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @updatedAt
+  profilePicture      String               @default("")
+  status              Status               @default(ACTIVE)
+  availability        Boolean              @default(true)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
   userProfile         UserProfile?
-  requestsAsDonor     Request[]    @relation("requestsAsDonor")
-  requestsAsRequester Request[]    @relation("requestsAsRequester")
+  requestsAsDonor     Request[]            @relation("requestsAsDonor")
+  requestsAsRequester Request[]            @relation("requestsAsRequester")
   Revew               Review?
+  EventDonors         EventRegistrations[]
 
   @@map("user")
 }
@@ -81,18 +82,31 @@ model Review {
 
 // event model
 model BloodDonationEvent {
-  id              String   @id @default(uuid())
+  id              String               @id @default(uuid())
   eventTitle      String
   eventLocation   String
   eventDate       String
   eventTime       String
   contactNumber   String
-  eventCoverPhoto String   @default("")
-  isComplete      Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  eventCoverPhoto String               @default("")
+  isComplete      Boolean              @default(false)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  EventDonors     EventRegistrations[]
 
   @@map("blood_donation_events")
+}
+
+// event registration
+model EventRegistrations {
+  eventId String
+  userId  String
+
+  event BloodDonationEvent @relation(fields: [eventId], references: [id])
+  user  User               @relation(fields: [userId], references: [id])
+
+  @@id([eventId, userId])
+  @@map("event_registrations")
 }
 
 enum BloodType {
