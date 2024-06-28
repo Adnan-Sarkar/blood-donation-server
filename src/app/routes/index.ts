@@ -12,6 +12,7 @@ import {
 import { MetaRoute } from "../modules/meta/meta.route";
 import { ReviewRoute } from "../modules/review/review.route";
 import { UserRoute } from "../modules/user/user.route";
+import {EventRoute} from "../modules/event/event.route";
 
 const router = express.Router();
 
@@ -55,6 +56,10 @@ const routes = [
   {
     path: "/users",
     router: UserRoute,
+  },
+  {
+    path: "/event",
+    router: EventRoute,
   },
 ];
 
