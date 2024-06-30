@@ -15,6 +15,20 @@ const createBloodDonationEvent = catchAsync(async (req, res) => {
     });
 });
 
+// registration event
+const registrationBloodDonationEvent = catchAsync(async (req, res) => {
+    const {eventId} = req.params;
+    const result = await EventService.registrationBloodDonationEvent(req.user, eventId);
+
+    sendResponse(res, true, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Blood Donation event registration successfully",
+        data: result,
+    });
+});
+
 export const EventController = {
-    createBloodDonationEvent
+    createBloodDonationEvent,
+    registrationBloodDonationEvent
 }
