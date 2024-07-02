@@ -21,7 +21,26 @@ const registrationBloodDonationEvent = async (user: TJWTPayload, eventId: string
     return result;
 }
 
+// update event
+const updateBloodDonationEvent = async (eventId: string, payload: Partial<TBloodDonationEventType>) => {
+    await prisma.bloodDonationEvent.findUniqueOrThrow({
+        where: {
+            id: eventId
+        }
+    });
+
+    await prisma.bloodDonationEvent.update({
+        where: {
+            id: eventId
+        },
+        data: payload
+    });
+
+    return null;
+}
+
 export const EventService = {
     createBloodDonationEvent,
-    registrationBloodDonationEvent
+    registrationBloodDonationEvent,
+    updateBloodDonationEvent
 }
