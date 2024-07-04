@@ -8,4 +8,6 @@ eventRouter.post("/", auth("ADMIN", "SUPER_ADMIN"), EventController.createBloodD
 
 eventRouter.post("/event-registration/:eventId", auth("USER"), EventController.registrationBloodDonationEvent);
 
+eventRouter.patch("/event-registration/:eventId", auth("ADMIN", "SUPER_ADMIN"), EventController.updateBloodDonationEvent);
+
 export const EventRoute = eventRouter;
