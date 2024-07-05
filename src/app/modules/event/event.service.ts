@@ -39,6 +39,11 @@ const updateBloodDonationEvent = async (eventId: string, payload: Partial<TBlood
     return null;
 }
 
+// get all events
+const getAllEvents = async () => {
+    return await prisma.bloodDonationEvent.findMany();
+}
+
 export const EventService = {
     createBloodDonationEvent,
     registrationBloodDonationEvent,
