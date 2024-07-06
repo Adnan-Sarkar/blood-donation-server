@@ -47,5 +47,6 @@ const getAllEvents = async () => {
 export const EventService = {
     createBloodDonationEvent,
     registrationBloodDonationEvent,
-    updateBloodDonationEvent
+    updateBloodDonationEvent,
+    getAllEvents
 }
