@@ -44,9 +44,19 @@ const getAllEvents = async () => {
     return await prisma.bloodDonationEvent.findMany();
 }
 
+// get single event
+const getSingleEvent = async (eventId: string) => {
+    return await prisma.bloodDonationEvent.findUniqueOrThrow({
+        where: {
+            id: eventId
+        }
+    });
+}
+
 export const EventService = {
     createBloodDonationEvent,
     registrationBloodDonationEvent,
     updateBloodDonationEvent,
-    getAllEvents
+    getAllEvents,
+    getSingleEvent
 }
