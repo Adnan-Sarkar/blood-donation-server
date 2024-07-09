@@ -49,6 +49,19 @@ const getAllEvents = catchAsync(async (req, res) => {
     sendResponse(res, true, {
         success: true,
         statusCode: httpStatus.OK,
+        message: "Blood Donation events retrieved successfully",
+        data: result,
+    });
+});
+
+// get single event
+const getSingleEvent = catchAsync(async (req, res) => {
+    const {eventId} = req.params;
+    const result = await EventService.getSingleEvent(eventId);
+
+    sendResponse(res, true, {
+        success: true,
+        statusCode: httpStatus.OK,
         message: "Blood Donation event retrieved successfully",
         data: result,
     });
@@ -58,5 +71,6 @@ export const EventController = {
     createBloodDonationEvent,
     registrationBloodDonationEvent,
     updateBloodDonationEvent,
-    getAllEvents
+    getAllEvents,
+    getSingleEvent
 }
