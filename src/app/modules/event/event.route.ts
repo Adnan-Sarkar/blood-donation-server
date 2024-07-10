@@ -10,6 +10,8 @@ eventRouter.post("/event-registration/:eventId", auth("USER"), EventController.r
 
 eventRouter.patch("/event-registration/:eventId", auth("ADMIN", "SUPER_ADMIN"), EventController.updateBloodDonationEvent);
 
+eventRouter.get("/:eventId", EventController.getSingleEvent);
+
 eventRouter.get("/", EventController.getAllEvents);
 
 export const EventRoute = eventRouter;
