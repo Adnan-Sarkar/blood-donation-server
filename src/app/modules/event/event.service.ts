@@ -4,9 +4,11 @@ import TJWTPayload from "../../types/jwtPayload.type";
 
 // create event
 const createBloodDonationEvent = async (payload: TBloodDonationEventType) => {
-    return await prisma.bloodDonationEvent.create({
+    const result = await prisma.bloodDonationEvent.create({
         data: payload
     });
+
+    return result;
 }
 
 // registration event
@@ -41,16 +43,20 @@ const updateBloodDonationEvent = async (eventId: string, payload: Partial<TBlood
 
 // get all events
 const getAllEvents = async () => {
-    return await prisma.bloodDonationEvent.findMany();
+    const result = await prisma.bloodDonationEvent.findMany();
+
+    return result;
 }
 
 // get single event
 const getSingleEvent = async (eventId: string) => {
-    return await prisma.bloodDonationEvent.findUniqueOrThrow({
+    const result = await prisma.bloodDonationEvent.findUniqueOrThrow({
         where: {
             id: eventId
         }
     });
+
+    return result;
 }
 
 export const EventService = {
