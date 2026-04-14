@@ -8,6 +8,8 @@
 ![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
 ![Jest](https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white)
 
+**Live API:** `https://blood-donation-api-oivs.onrender.com`
+
 A production-grade REST API for the Blood Donation platform. Connects donors with recipients through secure request management, real-time notifications, async job queues, structured logging, and a full integration test suite.
 
 - JWT authentication — access token in memory, refresh token as HTTP-only cookie
