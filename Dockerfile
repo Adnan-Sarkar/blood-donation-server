@@ -1,6 +1,5 @@
-FROM node:20-alpine AS builder
+FROM node:20-slim AS builder
 WORKDIR /app
-RUN apk add --no-cache openssl
 COPY package*.json ./
 COPY prisma ./prisma/
 RUN npm ci
@@ -9,10 +8,9 @@ COPY tsconfig.json ./
 COPY src ./src/
 RUN npm run build
 
-FROM node:20-alpine AS production
+FROM node:20-slim AS production
 WORKDIR /app
 ENV NODE_ENV=production
-RUN apk add --no-cache openssl
 COPY package*.json ./
 COPY prisma ./prisma/
 RUN npm ci --omit=dev
