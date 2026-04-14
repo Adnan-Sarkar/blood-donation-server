@@ -9,7 +9,7 @@ import { metaData } from "../../constant/metaData";
 const createReview = catchAsync(async (req, res) => {
   const result = await ReviewServices.createReview(req.user, req.body);
 
-  sendResponse(res, false, {
+  sendResponse(res, {
     success: true,
     statusCode: httpStatus.CREATED,
     message: "Review created successfully",
@@ -21,7 +21,7 @@ const createReview = catchAsync(async (req, res) => {
 const getUserReview = catchAsync(async (req, res) => {
   const result = await ReviewServices.getUserReview(req.user);
 
-  sendResponse(res, false, {
+  sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "User review retrieved successfully",
@@ -34,7 +34,7 @@ const getAllReviews = catchAsync(async (req, res) => {
   const metaInfo = pickFromQueryParams(req.query, metaData);
   const result = await ReviewServices.getAllReviews(metaInfo);
 
-  sendResponse(res, false, {
+  sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Reviews retrieved successfully",

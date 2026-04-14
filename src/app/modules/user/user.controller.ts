@@ -11,13 +11,14 @@ const getAllUsers = catchAsync(async (req, res) => {
   const filterData = pickFromQueryParams(req.query, donorListQueryParams);
   const metaInfo = pickFromQueryParams(req.query, metaData);
 
-  const result = await UserService.getAllUsers(filterData, metaInfo);
+  const { meta, data } = await UserService.getAllUsers(filterData, metaInfo);
 
-  sendResponse(res, true, {
+  sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Users retrieved successfully",
-    data: result,
+    meta,
+    data,
   });
 });
 
@@ -27,7 +28,7 @@ const changeUserStatus = catchAsync(async (req, res) => {
 
   const result = await UserService.changeUserStatus(userId, req.body);
 
-  sendResponse(res, true, {
+  sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "User status changed successfully",

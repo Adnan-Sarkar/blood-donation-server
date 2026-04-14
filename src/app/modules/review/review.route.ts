@@ -1,10 +1,17 @@
 import express from "express";
 import auth from "../../middleware/auth";
+import validateRequest from "../../middleware/validateRequest";
 import { ReviewController } from "./review.controller";
+import { ReviewValidation } from "./review.validation";
 
 const reviewRouter = express.Router();
 
-reviewRouter.post("/", auth("USER"), ReviewController.createReview);
+reviewRouter.post(
+  "/",
+  auth("USER"),
+  validateRequest(ReviewValidation.createReviewValidationSchema),
+  ReviewController.createReview
+);
 
 reviewRouter.get("/all-reviews", ReviewController.getAllReviews);
 

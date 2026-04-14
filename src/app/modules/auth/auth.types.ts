@@ -1,6 +1,5 @@
 import { BloodType, Gender, UserRole } from "@prisma/client";
 
-
 export type TRegistration = {
   name: string;
   email: string;

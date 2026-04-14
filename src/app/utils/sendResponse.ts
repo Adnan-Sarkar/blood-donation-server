@@ -1,22 +1,18 @@
 import { Response } from "express";
 import TResponse from "../types/response.type";
 
-const sendResponse = <T>(
-  res: Response,
-  isMetaAvailable: boolean,
-  data: TResponse<T>
-) => {
-  const resObj: Record<string, any> = {
-    success: data.success,
-    statusCode: data.statusCode,
-    message: data.message,
-  };
+const sendResponse = <T>(res: Response, data: TResponse<T>): void => {
+  const resObj: Omit<TResponse<T>, "meta"> & { meta?: TResponse<T>["meta"] } =
+    {
+      success: data.success,
+      statusCode: data.statusCode,
+      message: data.message,
+      data: data.data,
+    };
 
-  if (isMetaAvailable) {
+  if (data.meta !== undefined) {
     resObj.meta = data.meta;
   }
-
-  resObj.data = data.data;
 
   res.status(data.statusCode).json(resObj);
 };

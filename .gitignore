@@ -1,5 +1,38 @@
-node_modules
-# Keep environment variables out of version control
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Environment files
 .env
-dist
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+
+# Test coverage
+coverage/
+
+# Prisma generated client (regenerated via postinstall)
+prisma/generated/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Deployment
 .vercel
+
+# AI assistant context (internal dev tooling)
+CLAUDE.md

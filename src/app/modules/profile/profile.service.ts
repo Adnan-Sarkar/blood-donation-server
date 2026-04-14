@@ -2,32 +2,36 @@ import { User, UserProfile } from "@prisma/client";
 import TJWTPayload from "../../types/jwtPayload.type";
 import prisma from "../../utils/prismaClient";
 
+const safeUserSelect = {
+  id: true,
+  name: true,
+  email: true,
+  contactNumber: true,
+  gender: true,
+  bloodType: true,
+  role: true,
+  location: true,
+  profilePicture: true,
+  status: true,
+  availability: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
 // get my profile
 const getMyProfile = async (payload: TJWTPayload) => {
-  const result = await prisma.user.findUniqueOrThrow({
-    where: {
-      id: payload.id,
-    },
-    include: {
-      userProfile: true,
-    },
+  return prisma.user.findUniqueOrThrow({
+    where: { id: payload.id },
+    select: { ...safeUserSelect, userProfile: true },
   });
-
-  return result;
 };
 
 // get donor profile
 const getDonorProfile = async (id: string) => {
-  const result = await prisma.user.findUniqueOrThrow({
-    where: {
-      id,
-    },
-    include: {
-      userProfile: true,
-    },
+  return prisma.user.findUniqueOrThrow({
+    where: { id },
+    select: { ...safeUserSelect, userProfile: true },
   });
-
-  return result;
 };
 
 // update my profile and user data
@@ -40,31 +44,17 @@ const updateMyUserAndProfileData = async (
 ) => {
   const { user: userInfo, userProfile } = payload;
 
-  let needUpdateUserInfo = false;
-  let needUpdateUserProfileInfo = false;
-
-  if (userInfo) {
-    needUpdateUserInfo = true;
-  }
-  if (userProfile) {
-    needUpdateUserProfileInfo = true;
-  }
-
   await prisma.$transaction(async (transactionClient) => {
-    if (needUpdateUserInfo) {
+    if (userInfo) {
       await transactionClient.user.update({
-        where: {
-          id: user.id,
-        },
+        where: { id: user.id },
         data: userInfo,
       });
     }
 
-    if (needUpdateUserProfileInfo) {
+    if (userProfile) {
       await transactionClient.userProfile.update({
-        where: {
-          userId: user.id,
-        },
+        where: { userId: user.id },
         data: userProfile,
       });
     }

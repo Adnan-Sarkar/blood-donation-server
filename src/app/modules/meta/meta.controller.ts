@@ -7,7 +7,7 @@ import { MetaServices } from "./meta.services";
 const getMetaInfo = catchAsync(async (req, res) => {
   const result = await MetaServices.getMetaInfo(req.user);
 
-  sendResponse(res, true, {
+  sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Donors successfully found",
@@ -19,7 +19,7 @@ const getMetaInfo = catchAsync(async (req, res) => {
 const getAdminMetadata = catchAsync(async (req, res) => {
   const result = await MetaServices.getAdminMetadata();
 
-  sendResponse(res, true, {
+  sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Admin metadata retrieved successfully",
@@ -29,5 +29,5 @@ const getAdminMetadata = catchAsync(async (req, res) => {
 
 export const MetaController = {
   getMetaInfo,
-  getAdminMetadata
+  getAdminMetadata,
 };

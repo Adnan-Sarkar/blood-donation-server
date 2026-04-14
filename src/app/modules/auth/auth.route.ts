@@ -6,7 +6,6 @@ import auth from "../../middleware/auth";
 
 const authRouter = express.Router();
 authRouter.post("/refresh-token", AuthController.refreshToken);
-
 authRouter.post(
   "/change-password",
   auth("ADMIN", "SUPER_ADMIN", "USER"),
@@ -14,20 +13,18 @@ authRouter.post(
   AuthController.changePassword
 );
 
-const registration = express.Router();
-registration.post(
+const registrationRoute = express.Router();
+registrationRoute.post(
   "/",
   validateRequest(AuthValidation.registrationValidationSchema),
   AuthController.registration
 );
 
-const login = express.Router();
-login.post(
+const loginRoute = express.Router();
+loginRoute.post(
   "/",
   validateRequest(AuthValidation.loginValidationSchema),
   AuthController.login
 );
 
-export const RegistrationRoute = registration;
-export const loginRoute = login;
-export const AuthRouter = authRouter;
+export { registrationRoute, loginRoute, authRouter };

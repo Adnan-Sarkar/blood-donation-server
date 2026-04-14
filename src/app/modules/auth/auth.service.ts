@@ -6,16 +6,16 @@ import { TLogin, TRegistration } from "./auth.types";
 import bcrypt from "bcrypt";
 import { jwtHelpers } from "../../utils/jwtHelpers";
 import TJWTPayload from "../../types/jwtPayload.type";
+import { JobName, QueueService } from "../queue";
+
+type TRefreshTokenPayload = { id: string };
 
 // registration
 const registration = async (payload: TRegistration) => {
   const { name, email, password, bloodType, gender, location, role } = payload;
 
   // hash password
-  const hashedPassword = await bcrypt.hash(
-    password,
-    Number(config.SALT_ROUNDS)
-  );
+  const hashedPassword = await bcrypt.hash(password, config.SALT_ROUNDS);
 
   const userData: Record<string, any> = {
     name,
@@ -64,20 +64,38 @@ const registration = async (payload: TRegistration) => {
     });
   });
 
+  void QueueService.enqueueJob(JobName.WELCOME_NOTIFICATION, {
+    type: JobName.WELCOME_NOTIFICATION,
+    userId: result.id,
+    email: result.email,
+    name: result.name,
+  });
+
   return result;
 };
 
 // login
 const login = async (payload: TLogin) => {
-  const userData = await prisma.user.findFirstOrThrow({
+  const userData = await prisma.user.findFirst({
     where: {
       email: payload.email,
     },
   });
 
+  if (!userData) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "No user found with this email!",
+    );
+  }
+
+  if (userData.status !== "ACTIVE") {
+    throw new AppError(httpStatus.FORBIDDEN, "Your account is not active.");
+  }
+
   const passwordMatched = await bcrypt.compare(
     payload.password,
-    userData.password
+    userData.password,
   );
 
   if (!passwordMatched) {
@@ -92,20 +110,15 @@ const login = async (payload: TLogin) => {
       email: userData.email,
       role: userData.role,
     },
-    config.JWT_ACCESS_SECRET as string,
-    config.JWT_ACCESS_EXPIRES_IN as string
+    config.JWT_ACCESS_SECRET,
+    config.JWT_ACCESS_EXPIRES_IN as string,
   );
 
-  // generate refresh token
+  // generate refresh token — minimal payload: only id needed
   const refreshToken = jwtHelpers.generateToken(
-    {
-      id: userData.id,
-      name: userData.name,
-      email: userData.email,
-      role: userData.role,
-    },
-    config.JWT_REFRESH_SECRET as string,
-    config.JWT_REFRESH_EXPIRES_IN as string
+    { id: userData.id },
+    config.JWT_REFRESH_SECRET,
+    config.JWT_REFRESH_EXPIRES_IN as string,
   );
 
   return {
@@ -123,22 +136,25 @@ const login = async (payload: TLogin) => {
 
 // get access token using refresh token
 const refreshToken = async (token: string) => {
-  let decodedData;
+  let decodedData: TRefreshTokenPayload;
   try {
     decodedData = jwtHelpers.verifyToken(
       token,
-      config.JWT_REFRESH_SECRET as string
-    ) as TJWTPayload;
-  } catch (error: any) {
+      config.JWT_REFRESH_SECRET,
+    ) as TRefreshTokenPayload;
+  } catch {
     throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized!");
   }
 
   const userData = await prisma.user.findUniqueOrThrow({
     where: {
       id: decodedData.id,
-      email: decodedData.email,
     },
   });
+
+  if (userData.status !== "ACTIVE") {
+    throw new AppError(httpStatus.FORBIDDEN, "Your account is not active.");
+  }
 
   // generate access token
   const accessToken = jwtHelpers.generateToken(
@@ -148,8 +164,8 @@ const refreshToken = async (token: string) => {
       email: userData.email,
       role: userData.role,
     },
-    config.JWT_ACCESS_SECRET as string,
-    config.JWT_ACCESS_EXPIRES_IN as string
+    config.JWT_ACCESS_SECRET,
+    config.JWT_ACCESS_EXPIRES_IN as string,
   );
 
   return accessToken;
@@ -158,7 +174,7 @@ const refreshToken = async (token: string) => {
 // change password
 const changePassword = async (
   user: TJWTPayload,
-  payload: { oldPassword: string; newPassword: string }
+  payload: { oldPassword: string; newPassword: string },
 ) => {
   const userData = await prisma.user.findUniqueOrThrow({
     where: {
@@ -169,7 +185,7 @@ const changePassword = async (
 
   const passwordMatched = await bcrypt.compare(
     payload.oldPassword,
-    userData.password
+    userData.password,
   );
 
   if (!passwordMatched) {
@@ -179,7 +195,7 @@ const changePassword = async (
   // hash password
   const hashedNewPassword = await bcrypt.hash(
     payload.newPassword,
-    Number(config.SALT_ROUNDS)
+    config.SALT_ROUNDS,
   );
 
   await prisma.user.update({

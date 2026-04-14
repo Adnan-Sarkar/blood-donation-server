@@ -6,6 +6,22 @@ import prisma from "../../utils/prismaClient";
 import { donorListSortByFields } from "../donation/donation.constant";
 import { TDonorListQueryParam } from "../donation/donation.type";
 
+const safeUserSelect = {
+  id: true,
+  name: true,
+  email: true,
+  contactNumber: true,
+  gender: true,
+  bloodType: true,
+  role: true,
+  location: true,
+  profilePicture: true,
+  status: true,
+  availability: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
 // get all users
 const getAllUsers = async (
   query: TDonorListQueryParam,
@@ -30,7 +46,8 @@ const getAllUsers = async (
       ...whereCondition,
       role: "USER",
     },
-    include: {
+    select: {
+      ...safeUserSelect,
       userProfile: true,
     },
     skip,

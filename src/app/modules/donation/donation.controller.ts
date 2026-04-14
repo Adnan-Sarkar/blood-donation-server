@@ -10,7 +10,7 @@ import { metaData } from "../../constant/metaData";
 const donationRequest = catchAsync(async (req, res) => {
   const result = await DonationService.donationRequest(req.body, req.user);
 
-  sendResponse(res, false, {
+  sendResponse(res, {
     success: true,
     statusCode: httpStatus.CREATED,
     message: "Request successfully made",
@@ -21,47 +21,51 @@ const donationRequest = catchAsync(async (req, res) => {
 // get all donation request
 const getAllDonationRequest = catchAsync(async (req, res) => {
   const metaInfo = pickFromQueryParams(req.query, metaData);
-  const result = await DonationService.getAllDonationRequest(
+  const { meta, data } = await DonationService.getAllDonationRequest(
     req.user,
     metaInfo
   );
 
-  sendResponse(res, false, {
+  sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Donation requests retrieved successfully",
-    data: result,
+    meta,
+    data,
   });
 });
 
 // Get All Requests Me As A Donor
 const getAllMyDonationRequests = catchAsync(async (req, res) => {
   const metaInfo = pickFromQueryParams(req.query, metaData);
-
-  const result = await DonationService.getAllMyDonationRequests(
+  const { meta, data } = await DonationService.getAllMyDonationRequests(
     req.user,
     metaInfo
   );
 
-  sendResponse(res, false, {
+  sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "My donation requests retrieved successfully",
-    data: result,
+    meta,
+    data,
   });
 });
 
 // Get All Requests Me As A Requester
 const getAllMyDonorRequest = catchAsync(async (req, res) => {
   const metaInfo = pickFromQueryParams(req.query, metaData);
+  const { meta, data } = await DonationService.getAllMyDonorRequest(
+    req.user,
+    metaInfo
+  );
 
-  const result = await DonationService.getAllMyDonorRequest(req.user, metaInfo);
-
-  sendResponse(res, false, {
+  sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "My donor requests retrieved successfully",
-    data: result,
+    meta,
+    data,
   });
 });
 
@@ -74,7 +78,7 @@ const checkDonationRequest = catchAsync(async (req, res) => {
     requesterId as string
   );
 
-  sendResponse(res, false, {
+  sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Checking donation request successfully",
@@ -91,7 +95,7 @@ const getDonationRequestStatus = catchAsync(async (req, res) => {
     requesterId as string
   );
 
-  sendResponse(res, false, {
+  sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Retrieved donation request status successfully",
@@ -109,7 +113,7 @@ const updateDonationRequest = catchAsync(async (req, res) => {
     req.body
   );
 
-  sendResponse(res, false, {
+  sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Donation request status successfully updated",
@@ -123,17 +127,18 @@ const getDonorList = catchAsync(async (req, res) => {
   const metaInfo = pickFromQueryParams(req.query, metaData);
   const userId = req.query?.excludeMe;
 
-  const result = await DonationService.getDonorList(
+  const { meta, data } = await DonationService.getDonorList(
     filterData,
     metaInfo,
     userId as string
   );
 
-  sendResponse(res, true, {
+  sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Donors successfully found",
-    data: result,
+    meta,
+    data,
   });
 });
 
@@ -143,7 +148,7 @@ const completeRequest = catchAsync(async (req, res) => {
 
   const result = await DonationService.completeRequest(requestId, req.user);
 
-  sendResponse(res, false, {
+  sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Donation request completed successfully",

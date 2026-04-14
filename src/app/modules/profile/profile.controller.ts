@@ -7,7 +7,7 @@ import { ProfileService } from "./profile.service";
 const getMyProfile = catchAsync(async (req, res) => {
   const result = await ProfileService.getMyProfile(req.user);
 
-  sendResponse(res, false, {
+  sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Profile retrieved successfully",
@@ -20,7 +20,7 @@ const getDonorProfile = catchAsync(async (req, res) => {
   const { donorId } = req.params;
   const result = await ProfileService.getDonorProfile(donorId);
 
-  sendResponse(res, false, {
+  sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Donor profile retrieved successfully",
@@ -35,7 +35,7 @@ const updateMyUserAndProfileData = catchAsync(async (req, res) => {
     req.user
   );
 
-  sendResponse(res, false, {
+  sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Profile updated successfully",

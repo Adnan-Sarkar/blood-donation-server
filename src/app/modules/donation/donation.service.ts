@@ -1,4 +1,6 @@
 import { Prisma, Request, RequestStatus } from "@prisma/client";
+import httpStatus from "http-status";
+import AppError from "../../error/AppError";
 import TJWTPayload from "../../types/jwtPayload.type";
 import prisma from "../../utils/prismaClient";
 import { TDonorListQueryParam } from "./donation.type";
@@ -6,13 +8,41 @@ import TMetaOptions from "../../types/metaOptions";
 import { donorListSortByFields } from "./donation.constant";
 import generatePaginationAndSorting from "../../utils/generatePaginationAndSorting";
 import generatePrismaWhereConditions from "../../utils/generatePrismaWhereConditions";
+import { JobName, QueueService } from "../queue";
+
+const safeUserSelect = {
+  id: true,
+  name: true,
+  email: true,
+  contactNumber: true,
+  gender: true,
+  bloodType: true,
+  role: true,
+  location: true,
+  profilePicture: true,
+  status: true,
+  availability: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
 
 // donation request
 const donationRequest = async (
   payload: Partial<Request>,
   user: TJWTPayload
 ) => {
-  const donationRequest = {
+  const donor = await prisma.user.findUniqueOrThrow({
+    where: { id: payload.donorId! },
+  });
+
+  if (!donor.availability) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Donor is not available for donation."
+    );
+  }
+
+  const donationRequestData = {
     donorId: payload.donorId,
     requesterId: user.id,
     phoneNumber: payload.phoneNumber,
@@ -24,25 +54,45 @@ const donationRequest = async (
   } as Request;
 
   const createdRequest = await prisma.request.create({
-    data: donationRequest,
+    data: donationRequestData,
+  });
+
+  void QueueService.enqueueJob(JobName.DONATION_REQUEST_NOTIFICATION, {
+    type: JobName.DONATION_REQUEST_NOTIFICATION,
+    donorId: donationRequestData.donorId,
+    requesterId: user.id,
+    requestId: createdRequest.id,
+    hospitalName: donationRequestData.hospitalName,
+    dateOfDonation: donationRequestData.dateOfDonation as string,
   });
 
   const requestDetails = await prisma.request.findUniqueOrThrow({
     where: {
       id: createdRequest.id,
     },
-    include: {
+    select: {
+      id: true,
+      donorId: true,
+      phoneNumber: true,
+      dateOfDonation: true,
+      timeOfDonation: true,
+      hospitalName: true,
+      hospitalAddress: true,
+      reason: true,
+      iscompleted: true,
+      requestStatus: true,
+      createdAt: true,
+      updatedAt: true,
       donor: {
-        include: {
+        select: {
+          ...safeUserSelect,
           userProfile: true,
         },
       },
     },
   });
 
-  const { requesterId, ...result } = requestDetails;
-
-  return result;
+  return requestDetails;
 };
 
 // get all donation requests
@@ -50,17 +100,27 @@ const getAllDonationRequest = async (
   user: TJWTPayload,
   metaData: TMetaOptions
 ) => {
-  const { page, limit } = metaData;
-  const pageNumber = Number(page) || 1;
-  const limitNumber = Number(limit) || 10;
-  const skip = (pageNumber - 1) * limitNumber;
+  const { page, limit, skip } = generatePaginationAndSorting(metaData, []);
 
   const result = await prisma.request.findMany({
     where: {
       donorId: user.id,
     },
-    include: {
-      requester: true,
+    select: {
+      id: true,
+      donorId: true,
+      requesterId: true,
+      phoneNumber: true,
+      dateOfDonation: true,
+      timeOfDonation: true,
+      hospitalName: true,
+      hospitalAddress: true,
+      reason: true,
+      iscompleted: true,
+      requestStatus: true,
+      createdAt: true,
+      updatedAt: true,
+      requester: { select: safeUserSelect },
     },
     skip,
     take: limit,
@@ -73,11 +133,7 @@ const getAllDonationRequest = async (
   });
 
   return {
-    meta: {
-      page,
-      limit,
-      total,
-    },
+    meta: { page, limit, total },
     data: result,
   };
 };
@@ -87,17 +143,28 @@ const getAllMyDonationRequests = async (
   user: TJWTPayload,
   metaData: TMetaOptions
 ) => {
-  const { page, limit } = metaData;
-  const pageNumber = Number(page) || 1;
-  const limitNumber = Number(limit) || 10;
+  const { page, limit, skip } = generatePaginationAndSorting(metaData, []);
 
   const result = await prisma.request.findMany({
     where: { requesterId: user.id },
-    include: {
-      donor: true,
+    select: {
+      id: true,
+      donorId: true,
+      requesterId: true,
+      phoneNumber: true,
+      dateOfDonation: true,
+      timeOfDonation: true,
+      hospitalName: true,
+      hospitalAddress: true,
+      reason: true,
+      iscompleted: true,
+      requestStatus: true,
+      createdAt: true,
+      updatedAt: true,
+      donor: { select: safeUserSelect },
     },
-    skip: (pageNumber - 1) * limitNumber,
-    take: limitNumber,
+    skip,
+    take: limit,
   });
 
   const total = await prisma.request.count({
@@ -107,11 +174,7 @@ const getAllMyDonationRequests = async (
   });
 
   return {
-    meta: {
-      page: pageNumber,
-      limit: limitNumber,
-      total,
-    },
+    meta: { page, limit, total },
     data: result,
   };
 };
@@ -121,19 +184,30 @@ const getAllMyDonorRequest = async (
   user: TJWTPayload,
   metaData: TMetaOptions
 ) => {
-  const { page, limit } = metaData;
-  const pageNumber = Number(page) || 1;
-  const limitNumber = Number(limit) || 10;
+  const { page, limit, skip } = generatePaginationAndSorting(metaData, []);
 
   const result = await prisma.request.findMany({
     where: {
       donorId: user.id,
     },
-    include: {
-      requester: true,
+    select: {
+      id: true,
+      donorId: true,
+      requesterId: true,
+      phoneNumber: true,
+      dateOfDonation: true,
+      timeOfDonation: true,
+      hospitalName: true,
+      hospitalAddress: true,
+      reason: true,
+      iscompleted: true,
+      requestStatus: true,
+      createdAt: true,
+      updatedAt: true,
+      requester: { select: safeUserSelect },
     },
-    skip: (pageNumber - 1) * limitNumber,
-    take: limitNumber,
+    skip,
+    take: limit,
   });
 
   const total = await prisma.request.count({
@@ -143,11 +217,7 @@ const getAllMyDonorRequest = async (
   });
 
   return {
-    meta: {
-      page: pageNumber,
-      limit: limitNumber,
-      total,
-    },
+    meta: { page, limit, total },
     data: result,
   };
 };
@@ -168,7 +238,7 @@ const checkDonationRequest = async (donorId: string, requesterId: string) => {
 const getDonationRequestStatus = async (
   donorId: string,
   requesterId: string
-) => {
+): Promise<RequestStatus | null> => {
   const result = await prisma.request.findFirst({
     where: {
       requesterId,
@@ -176,11 +246,7 @@ const getDonationRequestStatus = async (
     },
   });
 
-  if (result?.id) {
-    return result.requestStatus;
-  } else {
-    return false;
-  }
+  return result ? result.requestStatus : null;
 };
 
 // update donation request status
@@ -189,12 +255,19 @@ const updateDonationRequest = async (
   user: TJWTPayload,
   payload: { status: RequestStatus }
 ) => {
-  await prisma.request.findUniqueOrThrow({
+  const existingRequest = await prisma.request.findUniqueOrThrow({
     where: {
       id: requestId,
       donorId: user.id,
     },
   });
+
+  if (existingRequest.requestStatus !== RequestStatus.PENDING) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Request status cannot be changed."
+    );
+  }
 
   const result = await prisma.request.update({
     where: {
@@ -204,6 +277,13 @@ const updateDonationRequest = async (
     data: {
       requestStatus: payload.status,
     },
+  });
+
+  void QueueService.enqueueJob(JobName.REQUEST_STATUS_UPDATE, {
+    type: JobName.REQUEST_STATUS_UPDATE,
+    requestId,
+    requesterId: result.requesterId,
+    newStatus: payload.status,
   });
 
   return result;
@@ -253,7 +333,8 @@ const getDonorList = async (
       role: "USER",
       ...excludeMe,
     },
-    include: {
+    select: {
+      ...safeUserSelect,
       userProfile: true,
     },
     skip,
@@ -283,6 +364,13 @@ const completeRequest = async (id: string, user: TJWTPayload) => {
       donorId: user.id,
     },
   });
+
+  if (requestData.requestStatus !== RequestStatus.APPROVED) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Only approved requests can be marked as complete."
+    );
+  }
 
   await prisma.$transaction(async (transactionClient) => {
     await transactionClient.request.update({
