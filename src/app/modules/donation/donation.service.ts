@@ -102,10 +102,13 @@ const getAllDonationRequest = async (
 ) => {
   const { page, limit, skip } = generatePaginationAndSorting(metaData, []);
 
+  const where =
+    user.role === "ADMIN" || user.role === "SUPER_ADMIN"
+      ? {}
+      : { donorId: user.id };
+
   const result = await prisma.request.findMany({
-    where: {
-      donorId: user.id,
-    },
+    where,
     select: {
       id: true,
       donorId: true,
@@ -127,9 +130,7 @@ const getAllDonationRequest = async (
   });
 
   const total = await prisma.request.count({
-    where: {
-      donorId: user.id,
-    },
+    where,
   });
 
   return {
