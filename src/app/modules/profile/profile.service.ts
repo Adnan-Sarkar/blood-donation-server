@@ -53,10 +53,25 @@ const updateMyUserAndProfileData = async (
     }
 
     if (userProfile) {
-      await transactionClient.userProfile.update({
+      const existingProfile = await transactionClient.userProfile.findUnique({
         where: { userId: user.id },
-        data: userProfile,
       });
+
+      if (existingProfile) {
+        await transactionClient.userProfile.update({
+          where: { userId: user.id },
+          data: userProfile,
+        });
+      } else {
+        await transactionClient.userProfile.create({
+          data: {
+            userId: user.id,
+            bio: userProfile.bio ?? "",
+            age: userProfile.age ?? 0,
+            lastDonationDate: userProfile.lastDonationDate ?? "",
+          },
+        });
+      }
     }
   });
 

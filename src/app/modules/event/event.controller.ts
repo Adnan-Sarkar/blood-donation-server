@@ -69,10 +69,24 @@ const getSingleEvent = catchAsync(async (req, res) => {
   });
 });
 
+// get single event for admin
+const getSingleEventForAdmin = catchAsync(async (req, res) => {
+  const { eventId } = req.params;
+  const result = await EventService.getSingleEventForAdmin(eventId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Blood Donation event retrieved successfully for admin",
+    data: result,
+  });
+});
+
 export const EventController = {
   createBloodDonationEvent,
   registrationBloodDonationEvent,
   updateBloodDonationEvent,
   getAllEvents,
   getSingleEvent,
+  getSingleEventForAdmin,
 };

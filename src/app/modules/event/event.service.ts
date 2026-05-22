@@ -91,6 +91,11 @@ const getAllEvents = async () => {
         include: {
             _count: {
                 select: { EventDonors: true }
+            },
+            EventDonors: {
+                select: {
+                    userId: true
+                }
             }
         }
     });
@@ -123,10 +128,42 @@ const getSingleEvent = async (eventId: string) => {
     return result;
 }
 
+// get single event for admin — includes registrations with user details and contact info
+const getSingleEventForAdmin = async (eventId: string) => {
+    const result = await prisma.bloodDonationEvent.findUniqueOrThrow({
+        where: {
+            id: eventId
+        },
+        include: {
+            EventDonors: {
+                select: {
+                    userId: true,
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            contactNumber: true,
+                            bloodType: true,
+                            profilePicture: true,
+                            gender: true,
+                            location: true,
+                            availability: true
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    return result;
+}
+
 export const EventService = {
     createBloodDonationEvent,
     registrationBloodDonationEvent,
     updateBloodDonationEvent,
     getAllEvents,
-    getSingleEvent
+    getSingleEvent,
+    getSingleEventForAdmin
 }

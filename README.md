@@ -173,6 +173,7 @@ All endpoints are prefixed with `/api`.
 | POST   | `/event`                             | Admin / Super Admin | Create a blood donation event    |
 | POST   | `/event/event-registration/:eventId` | User                | Register for an event            |
 | PATCH  | `/event/event-registration/:eventId` | Admin / Super Admin | Update event registration status |
+| GET    | `/event/admin/:eventId`              | Admin / Super Admin | Get single event with registered users |
 | GET    | `/event/:eventId`                    | Public              | Get a single event               |
 | GET    | `/event`                             | Public              | List all events                  |
 

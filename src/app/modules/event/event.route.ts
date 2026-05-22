@@ -22,6 +22,12 @@ eventRouter.patch(
   EventController.updateBloodDonationEvent
 );
 
+eventRouter.get(
+  "/admin/:eventId",
+  auth("ADMIN", "SUPER_ADMIN"),
+  EventController.getSingleEventForAdmin
+);
+
 eventRouter.get("/:eventId", EventController.getSingleEvent);
 
 eventRouter.get("/", EventController.getAllEvents);
