@@ -1,4 +1,5 @@
 FROM node:20-slim AS builder
+RUN apt-get update -y && apt-get install -y openssl
 WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
@@ -9,6 +10,7 @@ COPY src ./src/
 RUN npm run build
 
 FROM node:20-slim AS production
+RUN apt-get update -y && apt-get install -y openssl
 WORKDIR /app
 ENV NODE_ENV=production
 COPY package*.json ./
