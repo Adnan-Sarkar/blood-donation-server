@@ -32,6 +32,8 @@ const registrationValidationSchema = z.object({
     })
     .trim()
     .min(1, "Location must not be empty"),
+  profilePicture: z.string().optional(),
+  contactNumber: z.string().optional(),
 });
 
 const loginValidationSchema = z.object({

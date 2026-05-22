@@ -12,7 +12,7 @@ type TRefreshTokenPayload = { id: string };
 
 // registration
 const registration = async (payload: TRegistration) => {
-  const { name, email, password, bloodType, gender, location, role } = payload;
+  const { name, email, password, bloodType, gender, location, role, profilePicture, contactNumber } = payload;
 
   // hash password
   const hashedPassword = await bcrypt.hash(password, config.SALT_ROUNDS);
@@ -28,6 +28,14 @@ const registration = async (payload: TRegistration) => {
 
   if (role) {
     userData["role"] = role;
+  }
+
+  if (profilePicture) {
+    userData["profilePicture"] = profilePicture;
+  }
+
+  if (contactNumber) {
+    userData["contactNumber"] = contactNumber;
   }
 
   const result = await prisma.$transaction(async (transaction) => {
@@ -57,6 +65,8 @@ const registration = async (payload: TRegistration) => {
         bloodType: true,
         location: true,
         availability: true,
+        profilePicture: true,
+        contactNumber: true,
         createdAt: true,
         updatedAt: true,
         userProfile: true,

@@ -11,6 +11,8 @@ export type TRegistration = {
   bio: string;
   lastDonationDate: string;
   role: keyof typeof UserRole;
+  profilePicture?: string;
+  contactNumber?: string;
 };
 
 export type TLogin = {
